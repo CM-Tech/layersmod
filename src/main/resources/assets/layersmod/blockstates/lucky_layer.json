@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "normal": { "model": "layersmod:lucky_layer" },
+    "layers=1":  { "model": "layersmod:lucky_layer2" },
+    "layers=2":  { "model": "layersmod:lucky_layer4" },
+    "layers=3":  { "model": "layersmod:lucky_layer6" },
+    "layers=4":  { "model": "layersmod:lucky_layer8" },
+    "layers=5":  { "model": "layersmod:lucky_layer10" },
+    "layers=6":  { "model": "layersmod:lucky_layer12" },
+    "layers=7":  { "model": "layersmod:lucky_layer14" },
+    "layers=8":  { "model": "layersmod:lucky_layer" }
+  }
+}

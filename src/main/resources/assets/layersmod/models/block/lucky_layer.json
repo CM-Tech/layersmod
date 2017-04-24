@@ -1,0 +1,12 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "down": "layersmod:blocks/lucky16",
+    "up": "layersmod:blocks/lucky16",
+    "north": "layersmod:blocks/lucky_side",
+    "south": "layersmod:blocks/lucky_side",
+    "west": "layersmod:blocks/lucky_side",
+    "east": "layersmod:blocks/lucky_side",
+    "particle": "layersmod:blocks/lucky_side"
+  }
+}
