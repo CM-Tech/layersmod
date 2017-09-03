@@ -23,7 +23,8 @@ class LuckyLayerItem(block: Block) extends ItemBlock(block) {
 
   override def showDurabilityBar(stack: ItemStack): Boolean = this.getLuck(stack) != 0
 
-  override def getDurabilityForDisplay(stack: ItemStack): Double = 1 - Math.abs(Math.round(this.getLuck(stack)*16/100)) / 16.0
+  override def getDurabilityForDisplay(stack: ItemStack): Double =
+    1 - Math.abs(Math.round(this.getLuck(stack) * 16 / 100)) / 16.0
 
   override def getRGBDurabilityForDisplay(stack: ItemStack): Int = {
     MathHelper.hsvToRGB(
@@ -54,10 +55,28 @@ class LuckyLayerItem(block: Block) extends ItemBlock(block) {
       if (block == this.block) {
         val i = iblockstate.getValue(LuckyLayer.LAYERS).intValue
         if (i < 8) {
-          val iblockstate1  = iblockstate.withProperty(LuckyLayer.LAYERS, Integer.valueOf(i + 1))
+          val iblockstate1 =
+            iblockstate.withProperty(
+              LuckyLayer.LAYERS,
+              Integer.valueOf(math.min(i + getLuck(itemstack) * 16 / 100, 8))
+            )
           val axisalignedbb = iblockstate1.getCollisionBoundingBox(worldIn, blockpos)
-          if ((axisalignedbb != Block.NULL_AABB) && worldIn.checkNoEntityCollision(axisalignedbb.offset(blockpos)) && worldIn
-                .setBlockState(blockpos, iblockstate1, 10)) {
+          if ((axisalignedbb != Block.NULL_AABB) && worldIn.checkNoEntityCollision(axisalignedbb.offset(blockpos)) &&
+              worldIn.setBlockState(blockpos, iblockstate1, 2)) {
+            if (i + getLuck(itemstack) * 16 / 100 > 8) {
+              placeBlockWithLuck(
+                itemstack,
+                player,
+                worldIn,
+                pos.add(0, 1, 0),
+                facing,
+                hitX,
+                hitY,
+                hitZ,
+                iblockstate1,
+                (i * 100 / 16 + getLuck(itemstack)) % 50
+              )
+            }
             val soundtype = this.block.getSoundType(iblockstate1, worldIn, pos, player)
             worldIn.playSound(
               player,
@@ -68,7 +87,7 @@ class LuckyLayerItem(block: Block) extends ItemBlock(block) {
               soundtype.getPitch * 0.8F
             )
             itemstack.shrink(1)
-            return EnumActionResult.SUCCESS
+            EnumActionResult.SUCCESS
           }
         }
       }
@@ -82,6 +101,32 @@ class LuckyLayerItem(block: Block) extends ItemBlock(block) {
     */
   override def getMetadata(damage: Int): Int = damage
 
+  private def placeBlockWithLuck(stack: ItemStack,
+                                 player: EntityPlayer,
+                                 world: World,
+                                 pos: BlockPos,
+                                 side: EnumFacing,
+                                 hitX: Float,
+                                 hitY: Float,
+                                 hitZ: Float,
+                                 newState: IBlockState,
+                                 luck: Int): Boolean = {
+    if (super.placeBlockAt(stack, player, world, pos, side, hitX, hitY, hitZ, newState)) {
+      val tile = world.getTileEntity(pos).asInstanceOf[NBTLuckTileEntity]
+      if (tile != null) {
+        val height = Math.min(4 + (luck * 4 / 100), 8)
+        val iBlockState = world
+          .getBlockState(pos)
+          .withProperty(LuckyLayer.LAYERS, Integer.valueOf(height))
+        world.setBlockState(pos, iBlockState, 10)
+        tile.setLuck(luck)
+        tile.markDirty()
+      }
+      return true
+    }
+    false
+
+  }
   override def placeBlockAt(stack: ItemStack,
                             player: EntityPlayer,
                             world: World,
